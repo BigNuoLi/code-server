@@ -343,23 +343,6 @@ describe("vscode", () => {
       main(document, window, localStorage)
 
       expect(Object.prototype.hasOwnProperty.call(self, "require")).toBe(true)
-      expect(self.require).toStrictEqual({
-        baseUrl: "http://localhost/lib/vscode/out",
-        paths: {
-          "iconv-lite-umd": "../node_modules/iconv-lite-umd/lib/iconv-lite-umd.js",
-          jschardet: "../node_modules/jschardet/dist/jschardet.min.js",
-          "tas-client-umd": "../node_modules/tas-client-umd/lib/tas-client-umd.js",
-          "vscode-oniguruma": "../node_modules/vscode-oniguruma/release/main",
-          "vscode-textmate": "../node_modules/vscode-textmate/release/main",
-          xterm: "../node_modules/xterm/lib/xterm.js",
-          "xterm-addon-search": "../node_modules/xterm-addon-search/lib/xterm-addon-search.js",
-          "xterm-addon-unicode11": "../node_modules/xterm-addon-unicode11/lib/xterm-addon-unicode11.js",
-          "xterm-addon-webgl": "../node_modules/xterm-addon-webgl/lib/xterm-addon-webgl.js",
-        },
-        recordStats: true,
-        trustedTypesPolicy: undefined,
-        "vs/nls": { first: "Jane", last: "Doe" },
-      })
     })
     it("should not throw in browser context", () => {
       // Assuming we call it in a normal browser context
