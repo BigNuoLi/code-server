@@ -113,7 +113,6 @@ export function _createScriptURL(value: string, origin: string): string {
   }
   throw new Error(`Invalid script url: ${value}`)
 }
-// TODO@jsjoeio - add back in and move tests under getConfigurationForLoader
 
 /**
  * A helper function to get the require loader
