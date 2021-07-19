@@ -23,14 +23,6 @@ describe("vscode", () => {
       global.document = undefined as unknown as Document & typeof globalThis
     })
 
-    it("should throw an error if Document is undefined", () => {
-      const errorMsgPrefix = "[vscode]"
-      const errorMessage = `${errorMsgPrefix} Could not parse NLS configuration. document is undefined.`
-
-      expect(() => {
-        getNlsConfiguration(undefined as any as Document, "")
-      }).toThrowError(errorMessage)
-    })
     it("should throw an error if no nlsConfigElement", () => {
       const errorMsgPrefix = "[vscode]"
       const errorMessage = `${errorMsgPrefix} Could not parse NLS configuration. Could not find nlsConfigElement with id: ${nlsConfigElementId}`
@@ -66,6 +58,24 @@ describe("vscode", () => {
       const actual = getNlsConfiguration(global.document, "")
 
       expect(actual).toStrictEqual(dataSettings)
+
+      document.body.removeChild(mockElement)
+    })
+    it("should return have loadBundle property if _resolvedLangaugePackCoreLocation", () => {
+      const mockElement = document.createElement("div")
+      const dataSettings = {
+        locale: "en",
+        availableLanguages: ["en", "de"],
+        _resolvedLanguagePackCoreLocation: "./",
+      }
+
+      mockElement.setAttribute("id", nlsConfigElementId)
+      mockElement.setAttribute("data-settings", JSON.stringify(dataSettings))
+      document.body.appendChild(mockElement)
+      const nlsConfig = getNlsConfiguration(global.document, "")
+
+      expect(nlsConfig._resolvedLanguagePackCoreLocation).not.toBe(undefined)
+      expect(nlsConfig.loadBundle).not.toBe(undefined)
 
       document.body.removeChild(mockElement)
     })
@@ -165,7 +175,7 @@ describe("vscode", () => {
       localStorage.removeItem("colorThemeData")
     })
   })
-  describe.only("getConfigurationForLoader", () => {
+  describe("getConfigurationForLoader", () => {
     beforeEach(() => {
       const { window } = new JSDOM()
       global.document = window.document
