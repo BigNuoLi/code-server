@@ -102,6 +102,20 @@ type Loader = {
 }
 
 /**
+ * A helper function which creates a script url if the value
+ * is valid.
+ *
+ * Extracted into a function to make it easier to test
+ */
+export function _createScriptURL(value: string, origin: string): string {
+  if (value.startsWith(origin)) {
+    return value
+  }
+  throw new Error(`Invalid script url: ${value}`)
+}
+// TODO@jsjoeio - add back in and move tests under getConfigurationForLoader
+
+/**
  * A helper function to get the require loader
  *
  * This used by VSCode/code-server
@@ -117,10 +131,7 @@ export function getConfigurationForLoader({ origin, nlsConfig, options, _window 
     recordStats: true,
     trustedTypesPolicy: (_window as FixMeLater).trustedTypes?.createPolicy("amdLoader", {
       createScriptURL(value: string): string {
-        if (value.startsWith(origin)) {
-          return value
-        }
-        throw new Error(`Invalid script url: ${value}`)
+        return _createScriptURL(value, origin)
       },
     }),
     paths: {

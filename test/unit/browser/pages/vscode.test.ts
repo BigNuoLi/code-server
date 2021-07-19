@@ -7,6 +7,7 @@ import {
   nlsConfigElementId,
   getConfigurationForLoader,
   setBodyBackgroundToThemeBackgroundColor,
+  _createScriptURL,
   main,
 } from "../../../../src/browser/pages/vscode"
 
@@ -27,7 +28,7 @@ describe("vscode", () => {
       const errorMessage = `${errorMsgPrefix} Could not parse NLS configuration. document is undefined.`
 
       expect(() => {
-        getNlsConfiguration(undefined as any as Document)
+        getNlsConfiguration(undefined as any as Document, "")
       }).toThrowError(errorMessage)
     })
     it("should throw an error if no nlsConfigElement", () => {
@@ -35,7 +36,7 @@ describe("vscode", () => {
       const errorMessage = `${errorMsgPrefix} Could not parse NLS configuration. Could not find nlsConfigElement with id: ${nlsConfigElementId}`
 
       expect(() => {
-        getNlsConfiguration(document)
+        getNlsConfiguration(document, "")
       }).toThrowError(errorMessage)
     })
     it("should throw an error if no nlsConfig", () => {
@@ -47,7 +48,7 @@ describe("vscode", () => {
       const errorMessage = `${errorMsgPrefix} Could not parse NLS configuration. Found nlsConfigElement but missing data-settings attribute.`
 
       expect(() => {
-        getNlsConfiguration(document)
+        getNlsConfiguration(document, "")
       }).toThrowError(errorMessage)
 
       document.body.removeChild(mockElement)
@@ -62,7 +63,7 @@ describe("vscode", () => {
       mockElement.setAttribute("id", nlsConfigElementId)
       mockElement.setAttribute("data-settings", JSON.stringify(dataSettings))
       document.body.appendChild(mockElement)
-      const actual = getNlsConfiguration(global.document)
+      const actual = getNlsConfiguration(global.document, "")
 
       expect(actual).toStrictEqual(dataSettings)
 
@@ -164,7 +165,7 @@ describe("vscode", () => {
       localStorage.removeItem("colorThemeData")
     })
   })
-  describe("getConfigurationForLoader", () => {
+  describe.only("getConfigurationForLoader", () => {
     beforeEach(() => {
       const { window } = new JSDOM()
       global.document = window.document
@@ -173,7 +174,7 @@ describe("vscode", () => {
       global.window = undefined as unknown as Window & typeof globalThis
       global.document = undefined as unknown as Document & typeof globalThis
     })
-    it("should return a loader object", () => {
+    it("should return a loader object (with undefined trustedTypesPolicy)", () => {
       const options = {
         base: "/",
         csStaticBase: "/",
@@ -212,7 +213,7 @@ describe("vscode", () => {
         // and find a way to test the function
         // maybe extract function into function
         // and test manually
-        trustedTypesPolicy: {},
+        trustedTypesPolicy: undefined,
         "vs/nls": {
           availableLanguages: {},
           first: "Jane",
@@ -220,6 +221,58 @@ describe("vscode", () => {
           locale: "en",
         },
       })
+    })
+    it("should return a loader object with trustedTypesPolicy", () => {
+      interface PolicyOptions {
+        createScriptUrl: (url: string) => string
+      }
+
+      function mockCreatePolicy(policyName: string, options: PolicyOptions) {
+        return {
+          name: policyName,
+          ...options,
+        }
+      }
+
+      const mockFn = jest.fn(mockCreatePolicy)
+
+      // @ts-expect-error we are adding a custom property to window
+      global.window.trustedTypes = {
+        createPolicy: mockFn,
+      }
+
+      const options = {
+        base: "/",
+        csStaticBase: "/",
+        logLevel: 1,
+      }
+      const nlsConfig = {
+        first: "Jane",
+        last: "Doe",
+        locale: "en",
+        availableLanguages: {},
+      }
+      const loader = getConfigurationForLoader({
+        options,
+        origin: "localhost",
+        nlsConfig: nlsConfig,
+        _window: global.window,
+      })
+
+      expect(loader.trustedTypesPolicy).not.toBe(undefined)
+      expect(loader.trustedTypesPolicy.name).toBe("amdLoader")
+    })
+  })
+  describe("_createScriptURL", () => {
+    it("should return the correct url", () => {
+      const url = _createScriptURL("localhost/foo/bar.js", "localhost")
+
+      expect(url).toBe("localhost/foo/bar.js")
+    })
+    it("should throw if the value doesn't start with the origin", () => {
+      expect(() => {
+        _createScriptURL("localhost/foo/bar.js", "coder.com")
+      }).toThrow("Invalid script url: localhost/foo/bar.js")
     })
   })
   // TODO@jsjoeio
@@ -253,7 +306,7 @@ describe("vscode", () => {
       // Assuming we call it in a normal browser context
       // where everything is defined
       expect(() => {
-        main()
+        main(global.document, global.window, global.localStorage)
       }).not.toThrow()
     })
   })
