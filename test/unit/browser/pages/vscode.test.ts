@@ -9,6 +9,7 @@ import {
   setBodyBackgroundToThemeBackgroundColor,
   _createScriptURL,
   main,
+  createBundlePath,
 } from "../../../../src/browser/pages/vscode"
 
 describe("vscode", () => {
@@ -78,6 +79,15 @@ describe("vscode", () => {
       expect(nlsConfig.loadBundle).not.toBe(undefined)
 
       document.body.removeChild(mockElement)
+    })
+  })
+  describe("createBundlePath", () => {
+    it("should return the correct path", () => {
+      const _resolvedLangaugePackCoreLocation = "./languages"
+      const bundle = "/bundle.js"
+      const expected = "./languages/!bundle.js.nls.json"
+      const actual = createBundlePath(_resolvedLangaugePackCoreLocation, bundle)
+      expect(actual).toBe(expected)
     })
   })
   describe("setBodyBackgroundToThemeBackgroundColor", () => {

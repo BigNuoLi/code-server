@@ -21,6 +21,17 @@ type NlsConfiguration = {
 }
 
 /**
+ * Helper function to create the path to the bundle
+ * for getNlsConfiguration.
+ */
+export function createBundlePath(_resolvedLanguagePackCoreLocation: string, bundle: string) {
+  // NOTE@jsjoeio - this comment was here before me but not sure
+  // why it's here or how to fix.
+  // FIXME: Only works if path separators are /.
+  return _resolvedLanguagePackCoreLocation + "/" + bundle.replace(/\//g, "!") + ".nls.json"
+}
+
+/**
  * A helper function to get the NLS Configuration settings.
  *
  * This is used by VSCode for localizations (i.e. changing
@@ -65,7 +76,7 @@ export function getNlsConfiguration(document: Document, base: string) {
         return cb(undefined, result)
       }
       // FIXME: Only works if path separators are /.
-      const path = nlsConfig._resolvedLanguagePackCoreLocation + "/" + bundle.replace(/\//g, "!") + ".nls.json"
+      const path = createBundlePath(nlsConfig._resolvedLanguagePackCoreLocation || "", bundle)
       fetch(`${base}/vscode/resource/?path=${encodeURIComponent(path)}`)
         .then((response) => response.json())
         .then((json) => {
