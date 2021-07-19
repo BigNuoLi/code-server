@@ -39,9 +39,9 @@ export function createBundlePath(_resolvedLanguagePackCoreLocation: string, bund
  *
  * Make sure to wrap this in a try/catch block when you call it.
  **/
-export function getNlsConfiguration(document: Document, base: string) {
+export function getNlsConfiguration(_document: Document, base: string) {
   const errorMsgPrefix = "[vscode]"
-  const nlsConfigElement = document?.getElementById(nlsConfigElementId)
+  const nlsConfigElement = _document?.getElementById(nlsConfigElementId)
   const dataSettings = nlsConfigElement?.getAttribute("data-settings")
 
   if (!nlsConfigElement) {
