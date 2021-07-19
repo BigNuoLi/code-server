@@ -1,6 +1,9 @@
 import * as cp from "child_process"
+import * as path from "path"
+import { promises as fs } from "fs"
 import { generateUuid } from "../../../src/common/util"
 import * as util from "../../../src/node/util"
+import { tmpdir } from "../../../src/node/constants"
 
 describe("getEnvPaths", () => {
   describe("on darwin", () => {
@@ -479,5 +482,25 @@ describe("pathToFsPath", () => {
     Object.defineProperty(process, "platform", {
       value: ORIGINAL_PLATFORM,
     })
+  })
+})
+
+describe("isFile", () => {
+  const testDir = path.join(tmpdir, "tests", "isFile")
+  let pathToFile = ""
+
+  beforeEach(async () => {
+    pathToFile = path.join(testDir, "foo.txt")
+    await fs.mkdir(testDir, { recursive: true })
+    await fs.writeFile(pathToFile, "hello")
+  })
+  afterEach(async () => {
+    await fs.rm(testDir, { recursive: true, force: true })
+  })
+  it("should return false if the path doesn't exist", async () => {
+    expect(await util.isFile(testDir)).toBe(false)
+  })
+  it("should return true if is file", async () => {
+    expect(await util.isFile(pathToFile)).toBe(true)
   })
 })
