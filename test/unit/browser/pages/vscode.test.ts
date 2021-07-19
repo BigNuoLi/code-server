@@ -295,7 +295,7 @@ describe("vscode", () => {
       }).toThrow("Invalid script url: localhost/foo/bar.js")
     })
   })
-  describe.only("main", () => {
+  describe("main", () => {
     beforeEach(() => {
       // We need to set the url in the JSDOM constructor
       // to prevent this error "SecurityError: localStorage is not available for opaque origins"
