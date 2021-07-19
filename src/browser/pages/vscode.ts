@@ -240,13 +240,7 @@ export function main(_document: Document | undefined, _window: Window | undefine
     origin: _window.location.origin,
   })
 
-  // TODO@jsjoeio
-  // I'm not sure how to properly type cast this
-  // This might be our best bet
-  // Source: https://stackoverflow.com/a/30740935
-  // This object on self.require is what configures the loader
-  // and tells it how to load files that get imported.
-  ;(self.require as FixMeLater) = loader
+  ;(self.require as unknown as Loader) = loader
 
   setBodyBackgroundToThemeBackgroundColor(_document, _localStorage)
 }
