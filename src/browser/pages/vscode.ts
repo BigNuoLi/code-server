@@ -219,17 +219,15 @@ export function main(_document: Document | undefined, _window: Window | undefine
   const errorMsgPrefix = "[vscode]"
 
   if (!_document) {
-    throw new Error(`${errorMsgPrefix} Could not set body background to theme background color. Document is undefined.`)
+    throw new Error(`${errorMsgPrefix} Could not run code-server vscode logic. document is undefined.`)
   }
 
   if (!_window) {
-    throw new Error(`${errorMsgPrefix} Could not set body background to theme background color. Document is undefined.`)
+    throw new Error(`${errorMsgPrefix} Could not run code-server vscode logic. window is undefined.`)
   }
 
   if (!_localStorage) {
-    throw new Error(
-      `${errorMsgPrefix} Could not set body background to theme background color. localStorage is undefined.`,
-    )
+    throw new Error(`${errorMsgPrefix} Could not run code-server vscode logic. localStorage is undefined.`)
   }
 
   const options = getOptions()

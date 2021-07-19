@@ -295,12 +295,14 @@ describe("vscode", () => {
       }).toThrow("Invalid script url: localhost/foo/bar.js")
     })
   })
-  // TODO@jsjoeio
-  // add tests for registerLoadBundleOnNlsConfig
-  describe("main", () => {
+  describe.only("main", () => {
     beforeEach(() => {
-      const { window } = new JSDOM()
+      // We need to set the url in the JSDOM constructor
+      // to prevent this error "SecurityError: localStorage is not available for opaque origins"
+      // See: https://github.com/jsdom/jsdom/issues/2304#issuecomment-62231494
+      const { window } = new JSDOM("", { url: "http://localhost" })
       global.document = window.document
+      global.localStorage = window.localStorage
 
       const mockElement = document.createElement("div")
       const dataSettings = {
@@ -321,6 +323,43 @@ describe("vscode", () => {
     })
     afterEach(() => {
       localStorage.removeItem("colorThemeData")
+    })
+    it("should throw if document is missing", () => {
+      expect(() => {
+        main(undefined, window, localStorage)
+      }).toThrow("[vscode] Could not run code-server vscode logic. document is undefined.")
+    })
+    it("should throw if window is missing", () => {
+      expect(() => {
+        main(document, undefined, localStorage)
+      }).toThrow("[vscode] Could not run code-server vscode logic. window is undefined.")
+    })
+    it("should throw if localStorage is missing", () => {
+      expect(() => {
+        main(document, window, undefined)
+      }).toThrow("[vscode] Could not run code-server vscode logic. localStorage is undefined.")
+    })
+    it("should add loader to self.require", () => {
+      main(document, window, localStorage)
+
+      expect(Object.prototype.hasOwnProperty.call(self, "require")).toBe(true)
+      expect(self.require).toStrictEqual({
+        baseUrl: "http://localhost/lib/vscode/out",
+        paths: {
+          "iconv-lite-umd": "../node_modules/iconv-lite-umd/lib/iconv-lite-umd.js",
+          jschardet: "../node_modules/jschardet/dist/jschardet.min.js",
+          "tas-client-umd": "../node_modules/tas-client-umd/lib/tas-client-umd.js",
+          "vscode-oniguruma": "../node_modules/vscode-oniguruma/release/main",
+          "vscode-textmate": "../node_modules/vscode-textmate/release/main",
+          xterm: "../node_modules/xterm/lib/xterm.js",
+          "xterm-addon-search": "../node_modules/xterm-addon-search/lib/xterm-addon-search.js",
+          "xterm-addon-unicode11": "../node_modules/xterm-addon-unicode11/lib/xterm-addon-unicode11.js",
+          "xterm-addon-webgl": "../node_modules/xterm-addon-webgl/lib/xterm-addon-webgl.js",
+        },
+        recordStats: true,
+        trustedTypesPolicy: undefined,
+        "vs/nls": { first: "Jane", last: "Doe" },
+      })
     })
     it("should not throw in browser context", () => {
       // Assuming we call it in a normal browser context
